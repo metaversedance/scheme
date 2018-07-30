@@ -97,6 +97,16 @@ quotes = {"'":  'quote',
           '`':  'quasiquote',
           ',':  'unquote'}
 
+
+# scheme_read:
+
+# If the current token is the string "nil", return the nil object.
+# If the current token is (, the expression is a pair or list. Call read_tail on the rest of src and return its result.
+# If the current token is ', `, or , the rest of the buffer should be processed as a quote, quasiquote, or unquote expression, respectively. You don't have to worry about this until Problem 7.
+# If the next token is not a delimiter, then it must be a primitive expression. Return it. (provided)
+# If none of the above cases apply, raise an error. (provided)
+
+#read a complete expression and remove it from the buffer
 def scheme_read(src):
     """Read the next expression from SRC, a Buffer of tokens.
 
@@ -115,10 +125,13 @@ def scheme_read(src):
     if val == 'nil':
         # BEGIN PROBLEM 1
         "*** YOUR CODE HERE ***"
+        return nil
         # END PROBLEM 1
     elif val == '(':
         # BEGIN PROBLEM 1
         "*** YOUR CODE HERE ***"
+
+        return read_tail(src)
         # END PROBLEM 1
     elif val in quotes:
         # BEGIN PROBLEM 7
@@ -128,6 +141,27 @@ def scheme_read(src):
         return val
     else:
         raise SyntaxError('unexpected token: {0}'.format(val))
+
+
+# read_tail:
+
+# If there are no more tokens, then the list is missing a close parenthesis and we should raise an error. (provided)
+
+# If the token is ), then we've reached the end of the list or pair. 
+#Remove this token from the buffer and return the nil object.
+
+# If the token is ., the current expression is a dotted pair. Implement this in Problem 2.
+
+# If none of the above cases apply, the next token is the operator in a combination,
+# e.g. src contains + 2 3). To parse this:
+#     Read the next complete expression in the buffer. 
+#     (Hint: Which function can we use to read a complete expression and remove it from the buffer?)
+
+#     Read the rest of the combination until the matching closing parenthesis.
+#     (Hint: Which function can we use to read the rest of a list and remove it from the buffer?)
+
+#     Return the results as a Pair instance, where the first element is the next complete 
+#    expression and the second element is the rest of the combination.
 
 def read_tail(src):
     """Return the remainder of a list in SRC, starting before an element or ).
@@ -145,14 +179,39 @@ def read_tail(src):
         elif src.current() == ')':
             # BEGIN PROBLEM 1
             "*** YOUR CODE HERE ***"
+            src.remove_front()
+            return nil
+
             # END PROBLEM 1
         elif src.current() == '.':
             # BEGIN PROBLEM 2
             "*** YOUR CODE HERE ***"
+            #remove the front to get to the expressio after the dot
+            src.remove_front()
+            #read expression after the dot
+            expression_after_dot = scheme_read(src)
+            #if there is only 1 expression after the dot:
+            if src.current() == ')':
+                #remove closing parenthesis
+                src.remove_front()
+                
+                #return the expression after dot 
+                return expression_after_dot
+            else:
+                #raise syntax error
+                raise SyntaxError("expected 1 element after: .")
+                #remove closing parenthesis
+
             # END PROBLEM 2
         else:
             # BEGIN PROBLEM 1
             "*** YOUR CODE HERE ***"
+
+            #Read the next complete expression in the buffer. 
+            next_complete_expression = scheme_read(src)
+            rest_of_combination = read_tail(src)
+            return Pair(next_complete_expression, rest_of_combination)
+
             # END PROBLEM 1
     except EOFError:
         raise SyntaxError('unexpected end of file')

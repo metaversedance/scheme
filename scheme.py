@@ -62,6 +62,19 @@ def eval_all(expressions, env):
 # Environments #
 ################
 
+#Frame.define:
+#DONE: define takes a symbol (represented by a Python string) and value and binds the value to that symbol in the frame.
+
+#Frame.lookup:
+
+# 2) lookup takes a symbol and returns the value bound to that name in the first Frame that the name is found in the current environment. 
+#Recall that an environment is defined as a frame, its parent frame, and all its ancestor frames, 
+#including the Global Frame. Therefore,
+
+# If the name is found in the current frame, return its value.
+# If the name is not found in the current frame and the frame has a parent frame, continue lookup in the parent frame.
+# If the name is not found in the current frame and there is no parent frame, raise a SchemeError (provided).
+
 class Frame:
     """An environment frame binds Scheme symbols to Scheme values."""
 
@@ -75,19 +88,45 @@ class Frame:
             return '<Global Frame>'
         s = sorted(['{0}: {1}'.format(k, v) for k, v in self.bindings.items()])
         return '<{{{0}}} -> {1}>'.format(', '.join(s), repr(self.parent))
-
+    
     def define(self, symbol, value):
         """Define Scheme SYMBOL to have VALUE."""
         # BEGIN PROBLEM 3
         "*** YOUR CODE HERE ***"
+        #bind symbol to value in self.bindings
+        self.bindings[symbol] = value
         # END PROBLEM 3
 
     def lookup(self, symbol):
         """Return the value bound to SYMBOL. Errors if SYMBOL is not found."""
         # BEGIN PROBLEM 3
         "*** YOUR CODE HERE ***"
+        
+        #If the name is found in the current frame, return its value.
+        if symbol in self.bindings:
+            return self.bindings[symbol]
+        #If the name is not found in the current frame and the frame has a parent frame:
+        else:
+            if self.parent:
+                #continue lookup in the parent frame.
+                return self.parent.lookup(symbol)
+        #If the name is not found in the current frame and there is no parent frame, 
+        #raise a SchemeError (provided).
         # END PROBLEM 3
         raise SchemeError('unknown identifier: {0}'.format(symbol))
+
+
+# Frame.rebind
+# 3) rebind takes a symbol and value and attempts to rebind the symbol to the new value in the first Frame\
+#  that the name is found in the environment. This requires looking up the value:
+
+# If the name is found in the current frame, rebind it to the new value.
+
+# If the name is not found in the current frame and the frame has a parent frame, 
+    #attempt to rebind it in the parent frame.
+
+# If the name is not found in the current frame and there is no parent frame, 
+    #raise a SchemeError (provided).
 
     # Mutation extension
     def rebind(self, symbol, value):
@@ -95,6 +134,18 @@ class Frame:
         Errors if SYMBOL is not found."""
         # BEGIN PROBLEM 3
         "*** YOUR CODE HERE ***"
+        # If the name is found in the current frame, rebind it to the new value.
+        if symbol in self.bindings:
+            self.bindings[symbol] = value
+            return
+        # If the name is not found in the current frame and if the frame has a parent frame:
+        elif self.parent:
+            self.parent.rebind(symbol, value)
+            return
+
+
+
+
         # END PROBLEM 3
         raise SchemeError('unknown identifier: {0}'.format(symbol))
 
